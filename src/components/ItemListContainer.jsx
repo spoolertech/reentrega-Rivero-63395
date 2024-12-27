@@ -2,14 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Modal } from 'react-bootstrap';
 import { useCart } from '../context/CartContext';
+import { DotLoader } from 'react-spinners';
 
 function ItemListContainer() {
   const { id } = useParams();
   const [items, setItems] = useState([]);
-  const { addToCart } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const { addToCart } = useCart();
 
   const productosSimulados = [
     {
@@ -112,10 +115,13 @@ function ItemListContainer() {
 
   useEffect(() => {
     const fetchItems = () => {
-      const filteredItems = productosSimulados.filter((producto) =>
-        id ? producto.name.toLowerCase().includes(id.toLowerCase()) : true
-      );
-      setItems(filteredItems);
+      setTimeout(() => {
+        const filteredItems = productosSimulados.filter((producto) =>
+          id ? producto.name.toLowerCase().includes(id.toLowerCase()) : true
+        );
+        setItems(filteredItems);
+        setLoading(false);
+      }, 1000);
     };
 
     fetchItems();
@@ -127,7 +133,6 @@ function ItemListContainer() {
     setIsModalOpen(true);
   };
 
-
   const handleThumbnailClick = (index) => {
     setCurrentImageIndex(index);
   };
@@ -135,31 +140,38 @@ function ItemListContainer() {
   return (
     <Container>
       <h2>Productos en categoría: {id ? id : 'Todos'}</h2>
-      <Row>
-        {items.map((item) => (
-          <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
-            <Card>
-              <Card.Img
-                variant="top"
-                src={item.images[0]}
-                alt={item.name}
-                onClick={() => handleImageClick(item)}
-                style={{ cursor: 'pointer' }}
-              />
-              <Card.Body>
-                <Card.Title>{item.name}</Card.Title>
-                <Card.Text>{item.description}</Card.Text>
-                <Card.Text>${item.price.toLocaleString('es-AR')}</Card.Text>
-                <Button variant="primary" onClick={() => addToCart(item)}>
-                  Agregar al carrito
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
 
       { }
+      {loading ? (
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+          <DotLoader color="#052403" />
+        </div>
+      ) : (
+        <Row>
+          {items.map((item) => (
+            <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
+              <Card>
+                <Card.Img
+                  variant="top"
+                  src={item.images[0]}
+                  alt={item.name}
+                  onClick={() => handleImageClick(item)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <Card.Body>
+                  <Card.Title>{item.name}</Card.Title>
+                  <Card.Text>{item.description}</Card.Text>
+                  <Card.Text>${item.price.toLocaleString('es-AR')}</Card.Text>
+                  <Button variant="primary" onClick={() => addToCart(item)}>
+                    Agregar al carrito
+                  </Button>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
+
       {currentItem && (
         <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} size="lg">
           <Modal.Header closeButton>
@@ -167,7 +179,6 @@ function ItemListContainer() {
           </Modal.Header>
           <Modal.Body>
             <Row>
-              {}
               <Col md={6}>
                 <img
                   src={currentItem.images[currentImageIndex]}
@@ -186,8 +197,6 @@ function ItemListContainer() {
                   ))}
                 </div>
               </Col>
-
-              { }
               <Col md={6}>
                 <h4>{currentItem.name}</h4>
                 <p>{currentItem.description}</p>
